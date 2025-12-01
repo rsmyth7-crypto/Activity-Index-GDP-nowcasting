@@ -1,0 +1,64 @@
+# Investigate Correlations
+
+###**The correlations between the individual search terms and GDP**
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Calculate the correlation matrix
+correlation_matrix = df.corr(numeric_only=True)
+
+# Display the correlation matrix
+print("Correlation Matrix:")
+display(correlation_matrix)
+
+# Visualize the correlation matrix using a heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Matrix of GDP and Google Trends Data')
+plt.show()
+
+###**Correlation matrix for past five years**
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Determine the start date for the last five years
+five_years_ago = df.index.max() - pd.DateOffset(years=5)
+
+# Filter the DataFrame for the last five years
+df_last_5_years = df[df.index >= five_years_ago]
+
+# Select relevant columns for correlation (GDP and keywords)
+correlation_columns = ['GDP'] + keywords
+df_corr_subset = df_last_5_years[correlation_columns]
+
+# Calculate the correlation matrix for the last 5 years
+correlation_matrix_5_years = df_corr_subset.corr(numeric_only=True)
+
+# Display the correlation matrix
+print("Correlation Matrix for Last 5 Years:")
+display(correlation_matrix_5_years)
+
+# Visualize the correlation matrix using a heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix_5_years, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Matrix of GDP and Google Trends Data (Last 5 Years)')
+plt.show()
+
+###**Saving the correlation matrices to results folder**
+
+import os
+
+results_folder = os.path.join(project_root, 'results')
+
+# Save the full correlation matrix
+output_path_full_corr = os.path.join(results_folder, 'full_correlation_matrix.csv')
+correlation_matrix.to_csv(output_path_full_corr)
+print(f"Full correlation matrix saved to: {output_path_full_corr}")
+
+# Save the 5-year correlation matrix
+output_path_5yr_corr = os.path.join(results_folder, 'five_year_correlation_matrix.csv')
+correlation_matrix_5_years.to_csv(output_path_5yr_corr)
+print(f"5-year correlation matrix saved to: {output_path_5yr_corr}")
