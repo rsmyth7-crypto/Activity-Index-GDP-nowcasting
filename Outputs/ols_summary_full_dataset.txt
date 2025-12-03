@@ -1,0 +1,30 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                    GDP   R-squared:                       0.451
+Model:                            OLS   Adj. R-squared:                  0.442
+Method:                 Least Squares   F-statistic:                     48.44
+Date:                Tue, 02 Dec 2025   Prob (F-statistic):           3.16e-09
+Time:                        14:24:44   Log-Likelihood:                -696.85
+No. Observations:                  61   AIC:                             1398.
+Df Residuals:                      59   BIC:                             1402.
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+=====================================================================================
+                        coef    std err          t      P>|t|      [0.025      0.975]
+-------------------------------------------------------------------------------------
+const              9.252e+04   2881.322     32.109      0.000    8.68e+04    9.83e+04
+hospitality_index -1263.0849    181.482     -6.960      0.000   -1626.230    -899.940
+==============================================================================
+Omnibus:                        1.372   Durbin-Watson:                   0.740
+Prob(Omnibus):                  0.504   Jarque-Bera (JB):                1.117
+Skew:                           0.100   Prob(JB):                        0.572
+Kurtosis:                       2.368   Cond. No.                         15.9
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+OLS INTERPRETATION (Full Dataset):
+R-squared: 0.451
+Coefficient on hospitality_index: -1263.08
+→ Statistically significant.
