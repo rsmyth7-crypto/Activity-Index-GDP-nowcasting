@@ -120,6 +120,8 @@ nowcast_results_df_5_years_trained = pd.DataFrame({
 rmse_5_years_trained = np.sqrt(mean_squared_error(all_actuals_5_years, all_preds_5_years))
 print("RF RMSE (Model Trained Only on Last 5 Years Data):", rmse_5_years_trained)
 
+"""Create graph for model trained on 5 years of data"""
+
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(12, 6))
@@ -149,7 +151,7 @@ nowcast_5yr_trained_path = os.path.join(results_folder, 'nowcast_results_5_years
 nowcast_results_df_5_years_trained.to_csv(nowcast_5yr_trained_path)
 print(f"Nowcasting results (model trained on last 5 years) saved to: {nowcast_5yr_trained_path}")
 
-"""Model Validation"""
+"""**Model Validation**"""
 
 import pandas as pd
 import numpy as np
@@ -157,101 +159,63 @@ from sklearn.metrics import mean_absolute_error
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 
-# --- 1. Prepare X and Y for the full dataset model (as in jXDIeJxOyn2Z) ---
-# Ensure df has the latest lagged and growth features (if not already done)
-# This is for robustness, as these steps are typically run before.
-df['GDP_lag1'] = df['GDP'].shift(1)
-df['GDP_growth'] = df['GDP'].pct_change()
-df_model_full_for_validation = df.dropna(subset=['GDP_lag1', 'GDP_growth', 'hospitality_index'])
-
-X_full_for_validation = df_model_full_for_validation[['GDP_lag1', 'hospitality_index']]
-y_full_for_validation = df_model_full_for_validation['GDP_growth']
-
-# --- 2. Calculate and print MAE for the full dataset nowcasting model ---
+# --- Calculate MAE for the full dataset nowcasting model ---
 # nowcast_results_df is available from jXDIeJxOyn2Z
-if 'nowcast_results_df' in locals():
+if 'nowcast_results_df' in locals() and not nowcast_results_df.empty:
     mae_full = mean_absolute_error(nowcast_results_df['actual'], nowcast_results_df['predicted'])
     print(f"Full Dataset Nowcasting - Mean Absolute Error (MAE): {mae_full:.4f}")
-else:
-    print("nowcast_results_df not found. Please ensure the full dataset RF cell (jXDIeJxOyn2Z) has been run.")
-
-
-# --- 3. Plot Residuals for the full dataset nowcasting model ---
-if 'nowcast_results_df' in locals():
     nowcast_results_df['residuals'] = nowcast_results_df['actual'] - nowcast_results_df['predicted']
-
-    # Ensure residuals for the 5-year trained model are also calculated before concatenation
-    if 'nowcast_results_df_5_years_trained' in locals():
-        nowcast_results_df_5_years_trained['residuals'] = nowcast_results_df_5_years_trained['actual'] - nowcast_results_df_5_years_trained['predicted']
-
-    # Determine global y-limits for consistent scaling
-    all_residuals = pd.concat([nowcast_results_df['residuals']])
-    if 'nowcast_results_df_5_years_trained' in locals():
-        all_residuals = pd.concat([all_residuals, nowcast_results_df_5_years_trained['residuals']])
-
-    y_min_global = all_residuals.min() * 1.1 # Add a little padding
-    y_max_global = all_residuals.max() * 1.1 # Add a little padding
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(nowcast_results_df.index, nowcast_results_df['residuals'], label="Residuals")
-    plt.axhline(0, color='red', linestyle='--', linewidth=0.8)
-    plt.legend()
-    plt.title("Residuals of Nowcast vs Actual GDP Growth (Full Dataset)")
-    plt.xlabel("Date")
-    plt.ylabel("Residuals (Actual - Predicted)")
-    plt.ylim(y_min_global, y_max_global) # Apply global limits
-    plt.grid(True)
-    plt.show()
 else:
-    print("Cannot plot residuals for full dataset: nowcast_results_df not found.")
+    print("nowcast_results_df not found or empty. Please ensure the full dataset RF cell (jXDIeJxOyn2Z) has been run.")
+    mae_full = None # Set to None if not calculated
 
-
-# --- 4 & 5. Train a final RF model on the full dataset for Feature Importance ---
-# This rf_final model is trained on the entire relevant dataset (X_full_for_validation, y_full_for_validation)
-# to get a single set of feature importances.
-rf_final = RandomForestRegressor(n_estimators=500, random_state=42)
-rf_final.fit(X_full_for_validation, y_full_for_validation)
-
-print("\nFeature Importances for Full Dataset Random Forest Model:")
-feature_importances = pd.Series(rf_final.feature_importances_, index=X_full_for_validation.columns)
-print(feature_importances.sort_values(ascending=False))
-
-# --- 6. Calculate MAE and plot residuals for the 5-year trained model ---
+# --- Calculate MAE for the 5-year trained model ---
 # nowcast_results_df_5_years_trained is available from fd881ec4
-if 'nowcast_results_df_5_years_trained' in locals():
+if 'nowcast_results_df_5_years_trained' in locals() and not nowcast_results_df_5_years_trained.empty:
     mae_5_years_trained = mean_absolute_error(nowcast_results_df_5_years_trained['actual'], nowcast_results_df_5_years_trained['predicted'])
     print(f"\n5-Year Trained Nowcasting - Mean Absolute Error (MAE): {mae_5_years_trained:.4f}")
-
-    # The 'residuals' column for nowcast_results_df_5_years_trained is now created earlier
-    plt.figure(figsize=(12, 6))
-    plt.plot(nowcast_results_df_5_years_trained.index, nowcast_results_df_5_years_trained['residuals'], label="Residuals")
-    plt.axhline(0, color='red', linestyle='--', linewidth=0.8)
-    plt.legend()
-    plt.title("Residuals of Nowcast vs Actual GDP Growth (Model Trained on Last 5 Years)")
-    plt.xlabel("Date")
-    plt.ylabel("Residuals (Actual - Predicted)")
-    plt.ylim(y_min_global, y_max_global) # Apply global limits
-    plt.grid(True)
-    plt.show()
+    nowcast_results_df_5_years_trained['residuals'] = nowcast_results_df_5_years_trained['actual'] - nowcast_results_df_5_years_trained['predicted']
 else:
-    print("\nnowcast_results_df_5_years_trained not found. Please ensure the 5-year trained RF cell (fd881ec4) has been run.")
+    print("\nnowcast_results_df_5_years_trained not found or empty. Please ensure the 5-year trained RF cell (fd881ec4) has been run.")
+    mae_5_years_trained = None # Set to None if not calculated
 
-# --- 7. Train a final RF model on the 5-year dataset for Feature Importance ---
-# Ensure df_model_5_years_train from fd881ec4 is available.
-# Re-create X_5_years_train and y_5_years_train for clarity and robustness.
-# Using the same logic as in fd881ec4 to define the 5-year training data.
-five_years_ago_train = df_model_full_for_validation.index.max() - pd.DateOffset(years=5)
-df_model_5_years_train_for_fi = df_model_full_for_validation[df_model_full_for_validation.index >= five_years_ago_train]
+# --- Determine global y-limits for consistent residual plot scaling ---
+all_residuals = pd.Series([]) # Initialize empty series
+if 'nowcast_results_df' in locals() and 'residuals' in nowcast_results_df.columns:
+    all_residuals = pd.concat([all_residuals, nowcast_results_df['residuals']])
+if 'nowcast_results_df_5_years_trained' in locals() and 'residuals' in nowcast_results_df_5_years_trained.columns:
+    all_residuals = pd.concat([all_residuals, nowcast_results_df_5_years_trained['residuals']])
 
-X_5_years_train_for_fi = df_model_5_years_train_for_fi[['GDP_lag1', 'hospitality_index']]
-y_5_years_train_for_fi = df_model_5_years_train_for_fi['GDP_growth']
+if not all_residuals.empty:
+    y_min_global = all_residuals.min() * 1.1 # Add a little padding
+    y_max_global = all_residuals.max() * 1.1 # Add a little padding
+else:
+    y_min_global, y_max_global = -0.05, 0.05 # Default if no residuals are found
 
-rf_5_years_fi = RandomForestRegressor(n_estimators=500, random_state=42)
-rf_5_years_fi.fit(X_5_years_train_for_fi, y_5_years_train_for_fi)
 
-print("\nFeature Importances for 5-Year Random Forest Model:")
-feature_importances_5_years = pd.Series(rf_5_years_fi.feature_importances_, index=X_5_years_train_for_fi.columns)
-print(feature_importances_5_years.sort_values(ascending=False))
+# --- Train a final RF model on the full dataset for Feature Importance ---
+# Assumes X and y are available from cell jXDIeJxOyn2Z
+if 'X' in locals() and 'y' in locals():
+    rf_final = RandomForestRegressor(n_estimators=500, random_state=42)
+    rf_final.fit(X, y)
+    print("\nFeature Importances for Full Dataset Random Forest Model:")
+    feature_importances = pd.Series(rf_final.feature_importances_, index=X.columns)
+    print(feature_importances.sort_values(ascending=False))
+else:
+    print("\nX and y for full dataset not found. Please ensure cell jXDIeJxOyn2Z has been run.")
+    feature_importances = None
+
+# --- Train a final RF model on the 5-year dataset for Feature Importance ---
+# Assumes X_5_years_train and y_5_years_train are available from cell fd881ec4
+if 'X_5_years_train' in locals() and 'y_5_years_train' in locals():
+    rf_5_years_fi = RandomForestRegressor(n_estimators=500, random_state=42)
+    rf_5_years_fi.fit(X_5_years_train, y_5_years_train)
+    print("\nFeature Importances for 5-Year Random Forest Model:")
+    feature_importances_5_years = pd.Series(rf_5_years_fi.feature_importances_, index=X_5_years_train.columns)
+    print(feature_importances_5_years.sort_values(ascending=False))
+else:
+    print("\nX_5_years_train and y_5_years_train for 5-year model not found. Please ensure cell fd881ec4 has been run.")
+    feature_importances_5_years = None
 
 import os
 import matplotlib.pyplot as plt
@@ -264,7 +228,8 @@ os.makedirs(models_folder, exist_ok=True)
 # --- Save Residual Plots ---
 
 # 1. Residual Plot for Full Dataset
-if 'nowcast_results_df' in locals() and not nowcast_results_df.empty:
+# Assumes nowcast_results_df has 'residuals' column and y_min_global/y_max_global are set in the previous cell (FkfwguC6U-cy)
+if 'nowcast_results_df' in locals() and not nowcast_results_df.empty and 'residuals' in nowcast_results_df.columns:
     plt.figure(figsize=(12, 6))
     plt.plot(nowcast_results_df.index, nowcast_results_df['residuals'], label="Residuals")
     plt.axhline(0, color='red', linestyle='--', linewidth=0.8)
@@ -280,9 +245,13 @@ if 'nowcast_results_df' in locals() and not nowcast_results_df.empty:
     plt.savefig(full_residuals_path)
     plt.close() # Close plot to free up memory
     print(f"Full dataset residuals plot saved to: {full_residuals_path}")
+else:
+    print("Cannot save full dataset residuals plot: nowcast_results_df or its 'residuals' not found or empty.")
+
 
 # 2. Residual Plot for 5-Year Trained Model
-if 'nowcast_results_df_5_years_trained' in locals() and not nowcast_results_df_5_years_trained.empty:
+# Assumes nowcast_results_df_5_years_trained has 'residuals' column and y_min_global/y_max_global are set in the previous cell (FkfwguC6U-cy)
+if 'nowcast_results_df_5_years_trained' in locals() and not nowcast_results_df_5_years_trained.empty and 'residuals' in nowcast_results_df_5_years_trained.columns:
     plt.figure(figsize=(12, 6))
     plt.plot(nowcast_results_df_5_years_trained.index, nowcast_results_df_5_years_trained['residuals'], label="Residuals")
     plt.axhline(0, color='red', linestyle='--', linewidth=0.8)
@@ -298,27 +267,205 @@ if 'nowcast_results_df_5_years_trained' in locals() and not nowcast_results_df_5
     plt.savefig(five_year_residuals_path)
     plt.close() # Close plot
     print(f"5-year trained residuals plot saved to: {five_year_residuals_path}")
+else:
+    print("Cannot save 5-year trained residuals plot: nowcast_results_df_5_years_trained or its 'residuals' not found or empty.")
+
 
 # --- Save Feature Importances ---
-if 'feature_importances' in locals():
+# Assumes feature_importances is calculated in the previous cell (FkfwguC6U-cy)
+if 'feature_importances' in locals() and feature_importances is not None:
     feature_importances_path_full = os.path.join(models_folder, 'feature_importances_full_dataset.txt')
     with open(feature_importances_path_full, 'w') as f:
         f.write("Feature Importances for Full Dataset Random Forest Model:\n")
         f.write(feature_importances.sort_values(ascending=False).to_string())
     print(f"Feature importances for full dataset saved to: {feature_importances_path_full}")
+else:
+    print("Feature importances for full dataset not found.")
 
-if 'feature_importances_5_years' in locals():
+# Assumes feature_importances_5_years is calculated in the previous cell (FkfwguC6U-cy)
+if 'feature_importances_5_years' in locals() and feature_importances_5_years is not None:
     feature_importances_path_5_years = os.path.join(models_folder, 'feature_importances_5_years.txt')
     with open(feature_importances_path_5_years, 'w') as f:
         f.write("Feature Importances for 5-Year Random Forest Model:\n")
         f.write(feature_importances_5_years.sort_values(ascending=False).to_string())
-    print(f"Feature importances for 5-year model saved to: {feature_importances_path_5_years}")
+    print(f"Feature importances for 5-year model saved to: {feature_importances_5_years}")
+else:
+    print("Feature importances for 5-year model not found.")
+
 
 # --- Save MAE Values ---
 mae_values_path = os.path.join(models_folder, 'mae_values.txt')
 with open(mae_values_path, 'w') as f:
-    if 'mae_full' in locals():
+    if 'mae_full' in locals() and mae_full is not None:
         f.write(f"Full Dataset Nowcasting - Mean Absolute Error (MAE): {mae_full:.4f}\n")
-    if 'mae_5_years_trained' in locals():
+    else:
+        f.write("Full Dataset Nowcasting - Mean Absolute Error (MAE): Not calculated\n")
+    if 'mae_5_years_trained' in locals() and mae_5_years_trained is not None:
         f.write(f"5-Year Trained Nowcasting - Mean Absolute Error (MAE): {mae_5_years_trained:.4f}\n")
+    else:
+        f.write("5-Year Trained Nowcasting - Mean Absolute Error (MAE): Not calculated\n")
 print(f"MAE values saved to: {mae_values_path}")
+
+"""## Train RF Model with GDP_lag1 only
+
+
+
+"""
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import mean_squared_error
+import numpy as np
+import pandas as pd
+
+# 1. Ensure the DataFrame df has the GDP_lag1 and GDP_growth columns
+# These columns are typically created earlier in the notebook, but ensure they exist
+# for robustness.
+if 'GDP_lag1' not in df.columns:
+    df['GDP_lag1'] = df['GDP'].shift(1)
+if 'GDP_growth' not in df.columns:
+    df['GDP_growth'] = df['GDP'].pct_change()
+
+# 2. Create a new DataFrame by dropping rows with NaN values from df
+df_model_gdp_only = df.dropna(subset=['GDP_lag1', 'GDP_growth'])
+
+# 3. Define the feature matrix X_gdp_only using only the 'GDP_lag1' column
+X_gdp_only = df_model_gdp_only[['GDP_lag1']]
+
+# 4. Define the target vector y_gdp_only using the 'GDP_growth' column
+y_gdp_only = df_model_gdp_only['GDP_growth']
+
+# 5. Initialize TimeSeriesSplit with n_splits=5
+tscv_gdp_only = TimeSeriesSplit(n_splits=5)
+
+# 6. Create empty lists to store all predictions, all actuals, and corresponding dates
+all_preds_gdp_only = []
+all_actuals_gdp_only = []
+all_dates_gdp_only = []
+
+# 7. Loop through each train and test index generated by the TimeSeriesSplit
+for train_idx, test_idx in tscv_gdp_only.split(X_gdp_only):
+    # 8. For each split, create X_train, X_test, y_train, and y_test subsets
+    X_train_gdp_only, X_test_gdp_only = X_gdp_only.iloc[train_idx], X_gdp_only.iloc[test_idx]
+    y_train_gdp_only, y_test_gdp_only = y_gdp_only.iloc[train_idx], y_gdp_only.iloc[test_idx]
+
+    # 9. Initialize a RandomForestRegressor model
+    rf_gdp_only = RandomForestRegressor(n_estimators=500, random_state=42)
+
+    # 10. Fit the Random Forest model to the training data
+    rf_gdp_only.fit(X_train_gdp_only, y_train_gdp_only)
+
+    # 11. Make predictions on the test data
+    pred_gdp_only = rf_gdp_only.predict(X_test_gdp_only)
+
+    # 12. Extend the lists
+    all_preds_gdp_only.extend(pred_gdp_only)
+    all_actuals_gdp_only.extend(y_test_gdp_only.tolist())
+    all_dates_gdp_only.extend(y_test_gdp_only.index.tolist())
+
+# 13. After the loop, create a pandas DataFrame
+nowcast_results_df_gdp_only = pd.DataFrame({
+    'date': all_dates_gdp_only,
+    'actual': all_actuals_gdp_only,
+    'predicted': all_preds_gdp_only,
+}).set_index('date').sort_index()
+
+# 14. Calculate the Root Mean Squared Error (RMSE)
+rmse_gdp_only = np.sqrt(mean_squared_error(all_actuals_gdp_only, all_preds_gdp_only))
+
+# 15. Print the calculated RMSE
+print("RF RMSE (GDP_lag1 only model):", rmse_gdp_only)
+
+"""## Compare Model Performance
+
+
+"""
+
+print(f"RMSE for Random Forest (GDP_lag1 only): {rmse_gdp_only:.4f}")
+print(f"RMSE for Random Forest (GDP_lag1 and hospitality_index): {rmse:.4f}")
+
+"""## Train RF Model with GDP_lag1 only (last 5 years)
+
+
+"""
+
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import mean_squared_error
+import numpy as np
+import pandas as pd
+
+# 1. Ensure the DataFrame df has the GDP_lag1 and GDP_growth columns
+# These columns are typically created earlier in the notebook, but ensure they exist
+# for robustness.
+if 'GDP_lag1' not in df.columns:
+    df['GDP_lag1'] = df['GDP'].shift(1)
+if 'GDP_growth' not in df.columns:
+    df['GDP_growth'] = df['GDP'].pct_change()
+
+# 2. Filter the df DataFrame to include only the last five years of data.
+last_available_date_5yr = df.index.max()
+five_years_ago_5yr = last_available_date_5yr - pd.DateOffset(years=5)
+df_5_years_gdp_only = df[df.index >= five_years_ago_5yr]
+
+# 3. Create a new DataFrame by dropping any rows with NaN values
+df_model_gdp_only_5_years = df_5_years_gdp_only.dropna(subset=['GDP_lag1', 'GDP_growth'])
+
+# 4. Define the feature matrix X_gdp_only_5_years using only the 'GDP_lag1' column
+X_gdp_only_5_years = df_model_gdp_only_5_years[['GDP_lag1']]
+
+# 5. Define the target vector y_gdp_only_5_years using the 'GDP_growth' column
+y_gdp_only_5_years = df_model_gdp_only_5_years['GDP_growth']
+
+# 6. Initialize TimeSeriesSplit with n_splits=3
+tscv_gdp_only_5_years = TimeSeriesSplit(n_splits=3)
+
+# 7. Create empty lists to store all predictions, all actuals, and corresponding dates
+all_preds_gdp_only_5_years = []
+all_actuals_gdp_only_5_years = []
+all_dates_gdp_only_5_years = []
+
+# Loop through each train and test index generated by the TimeSeriesSplit
+for train_idx, test_idx in tscv_gdp_only_5_years.split(X_gdp_only_5_years):
+    # a. Create X_train, X_test, y_train, and y_test subsets
+    X_train_gdp_only_5_years, X_test_gdp_only_5_years = X_gdp_only_5_years.iloc[train_idx], X_gdp_only_5_years.iloc[test_idx]
+    y_train_gdp_only_5_years, y_test_gdp_only_5_years = y_gdp_only_5_years.iloc[train_idx], y_gdp_only_5_years.iloc[test_idx]
+
+    # b. Initialize a RandomForestRegressor model
+    rf_gdp_only_5_years = RandomForestRegressor(n_estimators=500, random_state=42)
+
+    # c. Fit the Random Forest model to the training data
+    rf_gdp_only_5_years.fit(X_train_gdp_only_5_years, y_train_gdp_only_5_years)
+
+    # d. Make predictions on the test data
+    pred_gdp_only_5_years = rf_gdp_only_5_years.predict(X_test_gdp_only_5_years)
+
+    # e. Store all predictions, actual values, and corresponding dates
+    all_preds_gdp_only_5_years.extend(pred_gdp_only_5_years)
+    all_actuals_gdp_only_5_years.extend(y_test_gdp_only_5_years.tolist())
+    all_dates_gdp_only_5_years.extend(y_test_gdp_only_5_years.index.tolist())
+
+# 8. After the loop, create a pandas DataFrame
+nowcast_results_df_gdp_only_5_years = pd.DataFrame({
+    'date': all_dates_gdp_only_5_years,
+    'actual': all_actuals_gdp_only_5_years,
+    'predicted': all_preds_gdp_only_5_years,
+}).set_index('date').sort_index()
+
+# 9. Calculate the Root Mean Squared Error (RMSE)
+rmse_gdp_only_5_years = np.sqrt(mean_squared_error(all_actuals_gdp_only_5_years, all_preds_gdp_only_5_years))
+
+# 10. Print the calculated RMSE for this 'GDP_lag1' only model trained on the last 5 years.
+print(f"RF RMSE (GDP_lag1 only, last 5 years): {rmse_gdp_only_5_years}")
+
+"""## Compare Model Performance (last 5 years)
+
+### Subtask:
+Compare the RMSE of the 'GDP_lag1' only model (trained on the last 5 years) with the RMSE of the model that includes both 'GDP_lag1' and 'hospitality_index' (also trained on the last 5 years). Display both RMSE values.
+
+**Reasoning**:
+I need to print the RMSE values for both Random Forest models trained on the last 5 years, one with only 'GDP_lag1' and the other with 'GDP_lag1' and 'hospitality_index', to compare their performance.
+"""
+
+print(f"RMSE for Random Forest (GDP_lag1 only, last 5 years): {rmse_gdp_only_5_years:.4f}")
+print(f"RMSE for Random Forest (GDP_lag1 and hospitality_index, last 5 years): {rmse_5_years_trained:.4f}")
