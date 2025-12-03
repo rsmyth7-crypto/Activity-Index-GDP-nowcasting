@@ -1,5 +1,6 @@
 # Activity-Index-GDP-nowcasting
-This is the GitHub for my third year Introduction to Big data project which aims to answer the question, Can google trends regarding hospitality help in nowcasting GDP?
+This is the GitHub for my third year Introduction to Big data project which aims to answer the question: 
+'Can google trends regarding hospitality help in nowcasting GDP?'
 
 # **Structure**
 - `1.datacleaning.py`sets up folders, saves `NAQ03.20251127T121156.csv` to `../data/raw`, collects data using pytrends API relating to hospitality searches, aggregated to quarterly and saves to `../data/processed`, merges the data sets, creates a hospitality index PCA
@@ -23,7 +24,12 @@ This is the GitHub for my third year Introduction to Big data project which aims
   4.RFNowcastingmodelandvalidation.py
   ```
 
-  #Outputs
-  
-
-
+  # Outputs
+```
+  - ols_summary_full_dataset
+  - ols_summary_5_years_trained
+  - lasso__coefficients_hospt_gdp_full_dataset
+  - lasso__coefficients_hospt_gdp_5_years
+  - nowcasting_results_full_dataset
+  - nowcasting_results_5_years_trained`
+```
