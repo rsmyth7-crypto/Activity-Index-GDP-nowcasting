@@ -1,12 +1,12 @@
 # Activity-Index-GDP-nowcasting
 This is the GitHub for my third year Introduction to Big data project which aims to answer the question, Can google trends regarding hospitality help in nowcasting GDP?
 
-#**Structure**
-#`1.datacleaning.py`sets up folders, saves `NAQ03.20251127T121156.csv` to `/data/raw`, collects data using pytrends API relating to hospitality searches, aggregated to quarterly and saves to `/data/processed`, merges the data sets, creates a hospitality index PCA
-#`2.OLSRegression.py` , runs OLS regression of full data set, runs OLS regression using only the past five years of data, saves both regression results to `/results`
-`3.LASSORegression.py`, sets up a lagged GDP variable, runs LASSO regression of full data set, saves results to `/results` , runs LASSO regression of the data from the past five years and saves results to `/results`
-#`4.RFNowcastingmodelandvalidation.py`, creates random forest regression using full data set, creates graph showing the difference between the predicted values and the actual GDP, creates random forest regression trained on the data from the past five years, creates graph showing the difference between the predicted values and the actual GDP, save results to `/results`, create graphs showing residuals of both models, save to `/results`, calculate MAE of both models 
+# **Structure**
+# `1.datacleaning.py`sets up folders, saves `NAQ03.20251127T121156.csv` to `/data/raw`, collects data using pytrends API relating to hospitality searches, aggregated to quarterly and saves to `/data/processed`, merges the data sets, creates a hospitality index PCA
+# `2.OLSRegression.py` , runs OLS regression of full data set, runs OLS regression using only the past five years of data, saves both regression results to `/results`
+# `3.LASSORegression.py`, sets up a lagged GDP variable, runs LASSO regression of full data set, saves results to `/results` , runs LASSO regression of the data from the past five years and saves results to `/results`
+# `4.RFNowcastingmodelandvalidation.py`, creates random forest regression using full data set, creates graph showing the difference between the predicted values and the actual GDP, creates random forest regression trained on the data from the past five years, creates graph showing the difference between the predicted values and the actual GDP, save results to `/results`, create graphs showing residuals of both models, save to `/results`, calculate MAE of both models 
 
-#**Prerequisites**
+# **Prerequisites**
 - Python
 - Packages: ,`pytrends`
