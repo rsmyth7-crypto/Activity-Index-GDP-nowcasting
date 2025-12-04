@@ -15,13 +15,15 @@ This is the GitHub for my third year Introduction to Big data project which aims
 
 # Quick start 
 - Ensure the directories exist
-- Upload `NAQ03.20251127T121156.csv` to collab
+- Upload `NAQ03.20251204T171251.csv` to collab
 - run the steps
   ```
-  1.datacleaning.py
-  2.OLSRegression.py
-  3.LASSORegression.py
-  4.RFNowcastingmodelandvalidation.py
+  1_datacleaning.py
+  2_OLSRegression.py
+  3_LASSORegression.py
+  4_RFNowcastingmodelandvalidation.py
+  5_nowcastingmodel.py
+  6_trainooutofsamplenowcast
   ```
 
   # Outputs
@@ -33,3 +35,7 @@ This is the GitHub for my third year Introduction to Big data project which aims
   - nowcasting_results_full_dataset
   - nowcasting_results_5_years_trained`
 ```
+
+# Notes and Tips
+- `random_state=42` is used for the Time series split and the random forest
+- `Pytrends API` occassionally shows `TooManyRequestsError`, this requires time in between requests from the same IP address
