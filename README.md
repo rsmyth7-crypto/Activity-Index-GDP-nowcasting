@@ -11,7 +11,7 @@ This is the GitHub for my third year Introduction to Big data project which aims
 # **Prerequisites**
 - Python
 - Packages: ,`pytrends`, `pandas`, `scikit-learn` (imported as sklearn), `statsmodels`, `matplotlib`,`seaborn`, `numpy`
-- Data file at `../file/NAQ03.20251127T121156.csv`
+- Data file at `../file/NAQ03.20251204T171251.csv`
 
 # Quick start 
 - Ensure the directories exist
